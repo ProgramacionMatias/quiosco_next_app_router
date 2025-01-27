@@ -1,0 +1,62 @@
+//Una categoria puede tener muchos productos y un producto puede tener una categoria
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String
+  products Product[] //hace que categoria tenga multiples productos
+}
+
+model Product {
+  id         Int      @id @default(autoincrement())
+  name       String
+  price      Float
+  image      String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id]) // relacionar la tabla product con category
+  orderItems OrderProduct[]
+}
+
+model Order {
+  id    Int    @id @default(autoincrement())
+  name  String
+  total Float
+  date DateTime @default(now())
+  status Boolean @default(false)
+  orderReadyAT DateTime?
+  orderProducts OrderProduct[]
+}
+
+model OrderProduct {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  
+}
+
+//1. category:
+//Este es el nombre del campo dentro del modelo Product.
+//Define una relación "muchos a uno" con el modelo Category. Es decir, cada producto (Product) pertenece a una única categoría (Category).
+//2. Category:
+//Es el tipo del campo category, que apunta al modelo Category. En términos prácticos, este campo se comporta como un objeto que representa una categoría asociada a un producto.
+//3. @relation:
+//Este es un atributo especial de Prisma que se utiliza para definir relaciones entre tablas.
+//Especifica cómo está relacionada esta tabla (Product) con otra tabla (Category) en la base de datos.
+//4. fields: [categoryId]:
+//fields: Indica el campo en el modelo actual (Product) que actúa como la clave foránea (foreign key) en la relación.
+//En este caso, el campo categoryId en el modelo Product actúa como la clave foránea que conecta con el modelo Category.
+//5. references: [id]:
+//references: Especifica el campo en el modelo relacionado (Category) al que apunta la clave foránea.
+//En este caso, la clave foránea categoryId en el modelo Product hace referencia al campo id del modelo Category.
